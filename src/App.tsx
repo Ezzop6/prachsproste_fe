@@ -1,8 +1,11 @@
+import { Router } from './router/ProjectRouter';
+import { DefaultTheme } from './style/DefaultTheme';
+
 const App = () => {
   return (
-    <>
-      <div>Clean vite</div>
-    </>
+    <DefaultTheme>
+      <Router />
+    </DefaultTheme>
   );
 };
 
