@@ -1,30 +1,58 @@
 import { Button, Input, Paper, Typography } from '@mui/material';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { TrulloConnection } from '../services/TrulloConnection';
-import { TrulloDTO } from '../dto/Trullo.dto';
+import { BoardDTO } from '../dto/Trullo.dto';
+import { Trullo } from '../components/trullo/Trullo';
+import { UUID } from 'crypto';
 
 const conn = new TrulloConnection();
 
 const TrulloIndex = () => {
-  const [data, setData] = useState<TrulloDTO>();
-  const deleteAll = async () => {
-    const boards = await conn.deleteAllBoards();
-    setData(boards);
-  };
+  const [trullo, setTrullo] = useState<BoardDTO[]>();
+  const [newBoard, setNewBoard] = useState<string>('');
   const getAll = async () => {
     const boards = await conn.getAllBoards();
-    setData(boards);
+    setTrullo(boards);
+  };
+  const createBoard = async () => {
+    const board = await conn.createBoard({ title: newBoard });
+    setTrullo([...(trullo as BoardDTO[]), board]);
+  };
+
+  useEffect(() => {
+    getAll();
+    console.log('TrulloIndex mounted');
+  }, []);
+  const onDeleteBoard = (id: UUID) => {
+    const newBoards = trullo?.filter((board) => board.id !== id);
+    setTrullo(newBoards);
+  };
+  const onDeleteCard = (id: UUID) => {
+    const newBoards = trullo?.map((board) => {
+      const newCards = board.cards?.filter((card) => card.id !== id);
+      return { ...board, cards: newCards };
+    });
+    setTrullo(newBoards);
   };
   return (
-    <Paper>
-      <Button onClick={deleteAll}>Delete All</Button>
-      <Button onClick={getAll}>Get All</Button>
-      <Paper sx={{ display: 'flex', flexDirection: 'column' }}>
-        <Input placeholder="New Board"></Input>
-        <Button>Create Board</Button>
+    <>
+      <Paper>
+        <Button variant="contained" color="primary" onClick={getAll}>
+          Refresh
+        </Button>
+        <Input placeholder="Create Board" value={newBoard} onChange={(e) => setNewBoard(e.target.value)} />
+        <Button variant="contained" color="primary" onClick={createBoard}>
+          Create
+        </Button>
       </Paper>
-      <Typography>{JSON.stringify(data)}</Typography>
-    </Paper>
+      <Paper>
+        {trullo ? (
+          <Trullo trullo={trullo} onDeleteBoard={onDeleteBoard} onDeleteCard={onDeleteCard} />
+        ) : (
+          <Typography variant="h5">No boards available</Typography>
+        )}
+      </Paper>
+    </>
   );
 };
 

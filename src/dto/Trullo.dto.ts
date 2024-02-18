@@ -1,18 +1,18 @@
-type CardDTO = {
-  id?: string;
+import { UUID } from 'crypto';
+
+export interface CardDTO {
+  id?: UUID;
   createdAt?: Date;
   item?: string;
-};
+}
 
-type BoardDTO = {
-  id?: string;
+export interface BoardDTO {
+  id?: UUID;
   createdAt?: Date;
-  title?: string;
+  title: string;
   cards?: CardDTO[];
-};
+}
 
-type TrulloDTO = {
+export interface TrulloDTO {
   boards?: BoardDTO[];
-};
-
-export type { CardDTO, BoardDTO, TrulloDTO };
+}

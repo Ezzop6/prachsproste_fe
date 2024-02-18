@@ -2,6 +2,7 @@ import { Connection, Method } from './connection';
 import { API } from '../router/ApiPaths';
 import { UUID } from 'crypto';
 import { BoardDTO, CardDTO, TrulloDTO } from '../dto/Trullo.dto';
+import { HttpStatusCode } from 'axios';
 
 class TrulloConnection {
   private readonly conn: Connection;
@@ -14,47 +15,82 @@ class TrulloConnection {
   private readonly sendRequest = async (method: Method, subpath: string = '', data?: object) => {
     const headers = {};
     const path = `${this.apiPath}/${subpath}`;
-    const response = await this.conn.request(`${path}`, method, data, headers);
-    if (response instanceof Error) {
-      throw response;
-    } else if (response instanceof Object) {
-      return response.data;
+    const resp = await this.conn.request(`${path}`, method, data, headers);
+    if (resp instanceof Error || !resp) {
+      throw resp;
+    } else if (resp) {
+      return resp;
     }
   };
 
   // Boards
-  getAllBoards = async (): Promise<TrulloDTO> => {
-    return await this.sendRequest(Method.GET);
+  getAllBoards = async (): Promise<BoardDTO[]> => {
+    const resp = await this.sendRequest(Method.GET);
+    if (resp && 'data' in resp) {
+      return resp.data as BoardDTO[];
+    }
+    throw new Error('Invalid resp');
   };
 
-  deleteAllBoards = async () => await this.sendRequest(Method.DELETE);
+  deleteAllBoards = async (): Promise<HttpStatusCode> => {
+    const resp = await this.sendRequest(Method.DELETE);
+    if (resp && 'status' in resp) {
+      return resp.status as HttpStatusCode;
+    }
+    throw new Error('Invalid resp');
+  };
 
   // Boards CRUD
   createBoard = async (data: BoardDTO): Promise<BoardDTO> => {
-    return await this.sendRequest(Method.POST, '', data);
+    const resp = await this.sendRequest(Method.POST, '', data);
+    if (resp && 'data' in resp) {
+      return resp.data as BoardDTO;
+    }
+    throw new Error('Invalid resp');
   };
 
   readBoard = async (id: UUID): Promise<BoardDTO> => {
-    return await this.sendRequest(Method.GET, id);
+    const resp = await this.sendRequest(Method.GET, id);
+    if (resp && 'data' in resp) {
+      return resp.data as BoardDTO;
+    }
+    throw new Error('Invalid resp');
   };
 
   updateBoard = async (id: UUID, data: BoardDTO): Promise<BoardDTO> => {
-    return await this.sendRequest(Method.PATCH, id, data);
+    const resp = await this.sendRequest(Method.PATCH, id, data);
+    if (resp && 'data' in resp) {
+      return resp.data as BoardDTO;
+    }
+    throw new Error('Invalid resp');
   };
 
   deleteBoard = async (id: UUID) => await this.sendRequest(Method.DELETE, id);
 
   // Cards CRUD
   createCard = async (id: UUID, data: CardDTO): Promise<CardDTO> => {
-    return await this.sendRequest(Method.POST, `board/${id}`, data);
+    const resp = await this.sendRequest(Method.POST, `board/${id}`, data);
+    if (resp && 'data' in resp) {
+      return resp.data as CardDTO;
+    }
+    throw new Error('Invalid resp');
   };
 
   readCard = async (id: UUID): Promise<CardDTO> => {
-    return await this.sendRequest(Method.GET, `card/${id}`);
+    const resp = await this.sendRequest(Method.GET, `card/${id}`);
+    if (resp && 'data' in resp) {
+      return resp.data as CardDTO;
+    }
+    throw new Error('Invalid resp');
   };
 
-  deleteCard = async (id: UUID) => {
-    return await this.sendRequest(Method.DELETE, `card/${id}`);
+  deleteCard = async (id: UUID): Promise<HttpStatusCode> => {
+    const resp = await this.sendRequest(Method.DELETE, `card/${id}`);
+    if (resp && 'status' in resp) {
+      console.log(resp.status);
+      return resp.status as HttpStatusCode;
+    }
+    throw new Error('Invalid resp');
   };
 }
 
