@@ -1,4 +1,4 @@
-import { Box, Icon, IconButton, Input, Typography } from '@mui/material';
+import { Box, IconButton, Input, Typography } from '@mui/material';
 import { CardDTO } from '../../dto/Trullo.dto';
 import { UUID } from 'crypto';
 import { useState } from 'react';
@@ -29,7 +29,7 @@ const Card = ({ card, onDeleteCard, onEditCard }: TaskProps) => {
     >
       {!open && (
         <>
-          <Typography variant="h6" sx={{ width: '100%' }}>
+          <Typography variant="h6" sx={{ width: '100%', lineBreak: 'anywhere' }}>
             {card.item}
           </Typography>
           <Box sx={{ display: 'flex', flexDirection: 'column' }}>
