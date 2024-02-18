@@ -1,7 +1,7 @@
 import { Button, Input, Paper, Typography } from '@mui/material';
 import { useState, useEffect } from 'react';
 import { TrulloConnection } from '../services/TrulloConnection';
-import { BoardDTO } from '../dto/Trullo.dto';
+import { BoardDTO, CardDTO } from '../dto/Trullo.dto';
 import { Trullo } from '../components/trullo/Trullo';
 import { UUID } from 'crypto';
 
@@ -21,19 +21,54 @@ const TrulloIndex = () => {
 
   useEffect(() => {
     getAll();
-    console.log('TrulloIndex mounted');
   }, []);
-  const onDeleteBoard = (id: UUID) => {
+  const onDeleteBoard = async (id: UUID) => {
+    await conn.deleteBoard(id);
     const newBoards = trullo?.filter((board) => board.id !== id);
     setTrullo(newBoards);
   };
-  const onDeleteCard = (id: UUID) => {
+  const onDeleteCard = async (id: UUID) => {
+    conn.deleteCard(id);
     const newBoards = trullo?.map((board) => {
       const newCards = board.cards?.filter((card) => card.id !== id);
       return { ...board, cards: newCards };
     });
     setTrullo(newBoards);
   };
+  const onAddCard = async (id: UUID, card: string) => {
+    const newCard = await conn.createCard(id, { item: card });
+    const newBoards = trullo?.map((board) => {
+      if (board.id === id) {
+        return { ...board, cards: [...(board.cards as CardDTO[]), newCard] };
+      }
+      return board;
+    });
+    setTrullo(newBoards as BoardDTO[]);
+  };
+  const onBoardEdit = async (id: UUID, newName: string) => {
+    conn.updateBoard(id, { title: newName });
+    const newBoards = trullo?.map((board) => {
+      if (board.id === id) {
+        return { ...board, title: newName };
+      }
+      return board;
+    });
+    setTrullo(newBoards as BoardDTO[]);
+  };
+  const onCardEdit = async (id: UUID, newName: string) => {
+    conn.updateCard(id, { item: newName });
+    const newBoards = trullo?.map((board) => {
+      const newCards = board.cards?.map((card) => {
+        if (card.id === id) {
+          return { ...card, item: newName };
+        }
+        return card;
+      });
+      return { ...board, cards: newCards };
+    });
+    setTrullo(newBoards as BoardDTO[]);
+  };
+
   return (
     <>
       <Paper>
@@ -47,7 +82,14 @@ const TrulloIndex = () => {
       </Paper>
       <Paper>
         {trullo ? (
-          <Trullo trullo={trullo} onDeleteBoard={onDeleteBoard} onDeleteCard={onDeleteCard} />
+          <Trullo
+            trullo={trullo}
+            onDeleteBoard={onDeleteBoard}
+            onDeleteCard={onDeleteCard}
+            onAddCard={onAddCard}
+            onBoardEdit={onBoardEdit}
+            onCardEdit={onCardEdit}
+          />
         ) : (
           <Typography variant="h5">No boards available</Typography>
         )}

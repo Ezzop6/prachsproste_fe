@@ -1,7 +1,7 @@
 import { Connection, Method } from './connection';
 import { API } from '../router/ApiPaths';
 import { UUID } from 'crypto';
-import { BoardDTO, CardDTO, TrulloDTO } from '../dto/Trullo.dto';
+import { BoardDTO, CardDTO } from '../dto/Trullo.dto';
 import { HttpStatusCode } from 'axios';
 
 class TrulloConnection {
@@ -78,6 +78,13 @@ class TrulloConnection {
 
   readCard = async (id: UUID): Promise<CardDTO> => {
     const resp = await this.sendRequest(Method.GET, `card/${id}`);
+    if (resp && 'data' in resp) {
+      return resp.data as CardDTO;
+    }
+    throw new Error('Invalid resp');
+  };
+  updateCard = async (id: UUID, data: CardDTO): Promise<CardDTO> => {
+    const resp = await this.sendRequest(Method.PATCH, `card/${id}`, data);
     if (resp && 'data' in resp) {
       return resp.data as CardDTO;
     }
